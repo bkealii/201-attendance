@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Capture</title>
+    <script>
+        function redirectToForm() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var latitude = position.coords.latitude;
+                    var longitude = position.coords.longitude;
+
+                    // Use a reverse geocoding API to get the city and state
+                    var apiKey = "AIzaSyCvMTWHz9D9mfu625yP_v01_4V-qubwpq4"; // Replace with your Geocoding API key
+                    var geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`;
+
+                    fetch(geocodeUrl)
+                        .then(response => response.json())
+                        .then(data => {
+                            var city = '';
+                            var state = '';
+                            var components = data.results[0].address_components;
+
+                            // Parse through address components to find city and state
+                            for (var i = 0; i < components.length; i++) {
+                                var types = components[i].types;
+                                if (types.includes('locality')) {
+                                    city = components[i].long_name;
+                                }
+                                if (types.includes('administrative_area_level_1')) {
+                                    state = components[i].short_name;
+                                }
+                            }
+
+                            console.log("City: " + city + ", State: " + state);
+
+                            // Google Form URL
+                            var formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSf3MU5EtX95IZ0Mwj9L202oI3-ejrR71MXzw1v-zSqFlRT5bg/viewform?usp=sf_link";
+
+                            // Redirect to Google Form (without sending city/state)
+                            window.location.href = formUrl;
+                        })
+                        .catch(error => {
+                            console.error('Error during reverse geocoding:', error);
+                            alert("Unable to determine location.");
+                        });
+                }, function() {
+                    alert("Location access is required to proceed.");
+                });
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+    </script>
+</head>
+<body onload="redirectToForm()">
+    <p>Redirecting to the form...</p>
+</body>
+</html>
